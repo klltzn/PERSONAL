@@ -84,10 +84,6 @@ section {
   align-items: center;
 }
 
-.home-img {
-   border-radius: 50%;
-}
-
 .home-img img {
   border-radius: 50%;
   width: 35vw;
