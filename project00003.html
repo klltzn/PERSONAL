@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title></title>
+  <style>
+    body{
+      margin: 0;
+      padding: 0;
+    }
+    #container{
+      text-align: center;
+      background-color: rgb(50,0,255);
+      border-radius: 10px;
+      padding: 20px 0px;
+    }
+    button{
+      padding: 10px 5px;
+      font-size: 20px;
+      font-family: monospace;
+      font-weight: 700;
+      color: darkslategray;
+      border-radius: 10px;
+      border: 0;
+      outline: none;
+      background-color: skyblue;
+    }
+    h1{
+      color: white;
+    }
+    h2{
+      padding-bottom: 20px;
+    }
+    #history-container {
+      margin: 20px 20px;
+      border: 1px solid white;
+      border-radius: 20px;
+      height: 400px;
+      padding: 40px;
+      text-align: center;
+      line-height: 30px;
+      color: white;
+      font-size: 20px;
+      font-weight: 700;
+      outline: none;
+      font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+
+    }
+    
+    #history {
+      overflow-y: scroll;
+      height: 250px;
+      scroll-behavior: smooth;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="container">
+    <h1 id="display">00:00:00:00</h1>
+    <button id="start">start</button>
+    <button id="stop">stop</button>
+    <button id="reset">reset</button>
+    <button id="record">record</button>
+    <div id="history-container">
+      <h2>TIME-LAPSE</h2>
+      <div id="history">
+      </div>
+    </div>
+    
+
+  </div>
+  <script>
+    let btn = document.querySelectorAll('button');
+    let display = document.querySelector("#display");
+    let start = document.querySelector("#start");
+    let stop = document.querySelector("#stop");
+    let reset = document.querySelector("#reset");
+    let record = document.querySelector("#record");
+    let history = document.querySelector("#history")
+    
+    
+    btn.forEach(value => {
+      value.addEventListener('mouseenter', () => {
+        value.style.color = 'white'
+        value.style.transition = '0.3s ease'
+      })
+    })
+    
+    btn.forEach(value => {
+      value.addEventListener('mouseleave', () => {
+        value.style.color = 'darkslategray'
+        value.style.transition = '0.3s ease'
+      })
+    })
+    
+    
+    
+    let startTime = 0;
+    let recordTime = 0;
+    let stopTime = 0;
+    let pauseLength = 0;
+    let continueTime = 0;
+    let elapseTime = 0;
+    let intervalID;
+    let pause = true;
+    let hours = 0;
+    let minutes = 0;
+    let seconds = 0;
+    let milliseconds = 0;
+    
+    
+    
+    function pad(t){
+      return ("0" + t).length > 2 ? t: "0" + t;
+    }
+    function padForMilli(m){
+      if((m+"").length == 3){
+        return m
+      } else if((m+"").length == 2){
+        return "0" + m
+      } else {
+        return "00" + m
+      }
+    }
+    
+    
+    
+    const startAction = () => {
+      if(pause) {
+        pause = false;
+        stop.addEventListener('click', stopAction);
+        startTime = Date.now() - elapseTime;
+        intervalID = setInterval(updateTime, 1);
+    
+      }
+    }
+    
+    const stopAction = () => {
+      if (!pause) {
+        pause = true;
+        stop.textContent = "continue"
+        start.removeEventListener('click', startAction)
+        start.style.textDecoration = "line-through"
+        stopTime = Date.now();
+        clearInterval(intervalID)
+      } else {
+        pause = false
+        stop.textContent = "stop"
+        continueTime = Date.now();
+        pauseLength += (continueTime - stopTime);
+        intervalID = setInterval(resume, 1);
+      }
+    
+    }
+    
+    const resetAction = () => {
+      clearInterval(intervalID);
+      display.textContent = "00:00:00:00"
+      startTime = 0;
+      stopTime = 0;
+      pauseLength = 0;
+      continueTime = 0;
+      elapseTime = 0;
+      pause = true;
+      hours = 0;
+      minutes = 0;
+      seconds = 0;
+      milliseconds = 0;
+      start.addEventListener('click', startAction
+      )
+      stop.removeEventListener('click', stopAction)
+      stop.textContent = "stop"
+      start.style.textDecoration = 'none';
+    }
+    
+    const recordAction = () => {
+      if(pause){
+        recordTime += (Date.now() - (startTime + pauseLength + recordTime + (Date.now() - stopTime)))
+      } else{
+        recordTime += (Date.now() - (startTime + pauseLength + recordTime))
+      }
+      hours = Math.floor(recordTime / (1000 * 60 * 60));
+      minutes = Math.floor(recordTime / (1000 * 60));
+      seconds = Math.floor(recordTime / (1000));
+      milliseconds = recordTime % 1000;
+    
+      hours = pad(hours);
+      minutes = pad(minutes);
+      seconds = pad(seconds);
+      milliseconds = padForMilli(milliseconds);
+      
+      history.innerHTML += `${hours}:${minutes}:${seconds}:${milliseconds} <br>`
+    }
+    
+    
+    
+    start.addEventListener('click', startAction
+    );
+    stop.addEventListener('click', stopAction);
+    reset.addEventListener('click', resetAction);
+    record.addEventListener('click', recordAction);
+    
+    function resume(){
+      elapseTime = Date.now() - (startTime + pauseLength);
+      hours = Math.floor(elapseTime/(1000*60*60));
+      minutes = Math.floor(elapseTime/(1000*60));
+      seconds = Math.floor(elapseTime/(1000));
+      milliseconds = elapseTime%1000;
+      
+      
+      
+      
+      function pad(time){
+        return ("0"+time).length > 2 ? time: "0" + time;
+      }
+      function padForMilli(m){
+        if((m+"").length == 3){
+          return m
+        } else if((m+"").length == 2){
+          return "0" + m
+        } else {
+          return "00" + m
+        }
+      }
+      
+      hours = pad(hours);
+      minutes = pad(minutes);
+      seconds = pad(seconds);
+      milliseconds = padForMilli(milliseconds);
+      
+      display.textContent = `${hours}:${minutes}:${seconds}:${milliseconds}`;
+    }
+    
+    
+    function updateTime(){
+      elapseTime = Date.now() - startTime;
+      hours = Math.floor(elapseTime/(1000*60*60));
+      minutes = Math.floor(elapseTime/(1000*60));
+      seconds = Math.floor(elapseTime/(1000));
+      milliseconds = elapseTime%1000;
+      
+      
+      
+      
+      function pad(time){
+        return ("0"+time).length > 2 ? time: "0" + time;
+      }
+      function padForMilli(m){
+        if((m+"").length == 3){
+          return m
+        } else if((m+"").length == 2){
+          return "0" + m
+        } else {
+          return "00" + m
+        }
+      }
+      
+      hours = pad(hours);
+      minutes = pad(minutes);
+      seconds = pad(seconds);
+      milliseconds = padForMilli(milliseconds);
+      
+      display.textContent = `${hours}:${minutes}:${seconds}:${milliseconds}`;
+    }
+    
+  </script>
+</body>
+
+</html>
