@@ -85,7 +85,7 @@ section {
 }
 
 .home-img img {
-  border-radius: 50px;
+  border-radius: 50px 50px 200px 200px;
   width: 35vw;
   animation: floatImage 4s ease-in-out infinite;
 }
